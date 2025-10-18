@@ -36,6 +36,8 @@ mqtt5SRDemo/
 │   ├── values-override.yaml.example # Helm values template
 │   └── scripts/
 │       └── upload_image.sh     # Image upload automation
+├── DEPLOYMENT.md               # Complete deployment guide for AWS EKS
+├── README.md                   # This file
 └── pom.xml                     # Maven dependencies
 ```
 
@@ -45,21 +47,35 @@ mqtt5SRDemo/
 
 - Java 11 or higher
 - Maven 3.6+
-- AWS CLI configured
+- AWS CLI configured (if deploying on AWS)
 - kubectl
 - Helm 3
-- Solace PubSub+ Cloud account (or local broker)
+- Solace PubSub+ broker (Cloud, software, or appliance)
+- Access to Solace Schema Registry images
 
-### 1. Deploy Schema Registry (Optional)
+### 1. Deploy Schema Registry
 
-If you want to deploy your own Schema Registry on AWS EKS, you'll need to:
-- Set up an AWS EKS cluster
-- Create ECR repositories for Schema Registry images
-- Deploy PostgreSQL using CloudNativePG operator
-- Deploy Solace Schema Registry using Helm
-- Configure NGINX Ingress with TLS
+Schema Registry must be deployed separately. You have two options:
 
-**Or** use Solace PubSub+ Cloud which includes Schema Registry (recommended for getting started).
+**Option A: Deploy on AWS EKS** (Covered in this repo)
+
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for complete step-by-step instructions covering:
+- AWS EKS cluster setup with CloudFormation
+- ECR repository creation and image upload
+- PostgreSQL deployment with CloudNativePG
+- Schema Registry installation with Helm
+- NGINX Ingress with TLS configuration
+- Troubleshooting and production considerations
+
+**Option B: Deploy on Other Platforms**
+
+The Schema Registry can be deployed on:
+- Google Kubernetes Engine (GKE)
+- Azure Kubernetes Service (AKS)
+- On-premises Kubernetes
+- OpenShift
+
+The Helm chart and deployment approach is similar across platforms. Adjust the infrastructure setup (storage classes, load balancers) for your environment.
 
 ### 2. Configure the Application
 
