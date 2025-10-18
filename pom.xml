@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>com.example</groupId>
+    <artifactId>mqtt5-examples</artifactId>
+    <version>1.0.0</version>
+    <packaging>jar</packaging>
+    
+    <name>MQTT5 Examples</name>
+    <description>Simple MQTT5 Publisher and Subscriber examples using Eclipse Paho Java API</description>
+    
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Updated to latest stable version -->
+        <paho.version>1.2.5</paho.version>
+    </properties>
+  
+    <dependencies>
+        <!-- Eclipse Paho MQTT v5 Client -->
+        <dependency>
+            <groupId>org.eclipse.paho</groupId>
+            <artifactId>org.eclipse.paho.mqttv5.client</artifactId>
+            <version>${paho.version}</version>
+        </dependency>
+        
+        <!-- SLF4J Simple Logger (optional, for logging) -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+    
+        <!-- Solace Schema Registry JSON Schema SERDES -->
+        <dependency>
+          <groupId>com.solace</groupId>
+          <artifactId>solace-schema-registry-jsonschema-serde</artifactId>
+          <version>1.0.0</version>
+        </dependency>
+
+    <!-- Solace Schema Registry Common SERDES (provides config types) -->
+    <dependency>
+      <groupId>com.solace</groupId>
+      <artifactId>solace-schema-registry-common-serde</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+
+        <!-- Jackson for JSON payload building/parsing -->
+        <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+          <version>2.17.2</version>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                    <!-- Suppress warnings about deprecated sun.misc.Unsafe -->
+                    <compilerArgs>
+                        <arg>-Xlint:-deprecation</arg>
+                        <arg>-Xlint:-unchecked</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+            
+            <!-- Plugin to run the publisher -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <!-- Add JVM arguments to suppress warnings -->
+                    <options>
+                        <option>--add-opens=java.base/java.lang=ALL-UNNAMED</option>
+                        <option>--add-opens=java.base/java.util=ALL-UNNAMED</option>
+                    </options>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>run-publisher</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>MQTT5Publisher</mainClass>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>run-subscriber</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>MQTT5Subscriber</mainClass>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

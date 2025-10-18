@@ -1,0 +1,121 @@
+# Helm values override for Solace Schema Registry
+# Copy this file to values-override.yaml and fill in your values
+
+ingress:
+  enabled: true
+  hostNameSuffix: "YOUR_LOAD_BALANCER_IP.nip.io"  # e.g., "3.149.189.200.nip.io"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/use-forwarded-headers: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "Content-Type, Authorization, Accept, Origin, User-Agent, X-Requested-With, Cache-Control, Pragma, Expires"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-max-age: "86400"
+  tls:
+    enabled: true
+    secretName: schema-registry-tls-secret
+    # Note: Create the TLS secret separately using kubectl:
+    # kubectl -n solace create secret tls schema-registry-tls-secret --cert=tls.crt --key=tls.key
+   
+idp:
+  replicas: 1
+  registryOidcClientSecret: admin  # Change in production
+  # registryIdpKey: Create secret from TLS key
+  nodeEnv: prod
+  developerPassword: admin  # Change in production
+  readonlyPassword: admin   # Change in production
+  service:
+    name: schema-registry-idp-service
+    port: 3000
+  image:
+    name: "YOUR_AWS_ACCOUNT_ID.dkr.ecr.YOUR_REGION.amazonaws.com/YOUR_ORG/schemaregistry/solace-schema-registry-login-v1.0.0"
+    tag: v1.0.0
+
+backend:
+  registryOidcRoleClaimKey: groups
+  service:
+    name: schema-registry-backend-service
+    port: 8081
+  image:
+    name: "YOUR_AWS_ACCOUNT_ID.dkr.ecr.YOUR_REGION.amazonaws.com/YOUR_ORG/schemaregistry/solace-registry-v1.0.0"
+    tag: v1.0.0
+
+ui:
+  service:
+    name: schema-registry-ui-service
+    port: 8888
+  image:
+    name: "YOUR_AWS_ACCOUNT_ID.dkr.ecr.YOUR_REGION.amazonaws.com/YOUR_ORG/schemaregistry/solace-registry-ui-v1.0.0"
+    tag: v1.0.0
+
+database:
+  superuserSecret: ""  # Optional: provide existing secret name
+  logLevel: info
+  storageClass: "gp2"  # AWS: gp2 or gp3, GCP: standard, Azure: managed-premium
+  size: 20Gi  # Minimum 10Gi recommended for production
+  replicas: 1  # Use 3 for HA in production
+  enableMonitoring: false  # Set to true for production
+  postgresql:
+    securityContext:
+      fsGroup: 26
+      runAsUser: 26
+      runAsGroup: 26
+  tolerations: []
+  resources:
+    requests:
+      cpu: 500m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+bootstrap:
+  initdb:
+    database: app
+    user: registry
+    secret: ""  # Optional: provide existing secret name
+  recovery:
+    enabled: false
+    objectStore: false
+    volumeSnapshot:
+      storage: /var/lib/postgresql/backup
+      walStorage: /var/lib/postgresql/wal
+    backup: ""
+    recoveryTime: "2023-10-01T00:00:00Z"
+
+backup:
+  schedule: '0 0 0 * * *'  # Daily at midnight UTC
+  volumeSnapshot:
+    enabled: false
+    retentionPolicy: 7d
+    backupStorageClass: ""
+    backupStorageLocation: /var/lib/postgresql/backup
+    labels:
+      app: schema-registry-backup
+      environment: production
+    annotations:
+      backup: "true"
+  objectStore:
+    enabled: false
+    endpointURL: ""  # e.g., https://s3.amazonaws.com
+    destinationPath: "backups"
+    s3Credentials: ""
+    azureCredentials: ""
+    googleCredentials: ""
+    walCompression: "gzip"
+
+# Image pull policy
+imagePullPolicy: IfNotPresent
+
+# Image pull secrets for private registries
+# Note: Create the Docker config secret separately:
+# kubectl -n solace create secret docker-registry docker-registry-config \
+#   --docker-server=YOUR_AWS_ACCOUNT_ID.dkr.ecr.YOUR_REGION.amazonaws.com \
+#   --docker-username=AWS \
+#   --docker-password=$(aws ecr get-login-password --region YOUR_REGION)
+imagePullSecrets:
+  - name: docker-registry-config
+
