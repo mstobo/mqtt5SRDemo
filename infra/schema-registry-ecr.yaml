@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: ECR repos for Solace Schema Registry
+
+Parameters:
+  RepositoryPrefix: { Type: String, Default: schema-registry }
+  ImageTagMutability: { Type: String, AllowedValues: [MUTABLE, IMMUTABLE], Default: IMMUTABLE }
+  ScanOnPush: { Type: String, AllowedValues: ['true','false'], Default: 'true' }
+
+Resources:
+  EcrRepoLogin:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${RepositoryPrefix}/solace-schema-registry-login-v1.0.0
+      ImageTagMutability: !Ref ImageTagMutability
+      ImageScanningConfiguration: { ScanOnPush: !Ref ScanOnPush }
+      EncryptionConfiguration: { EncryptionType: AES256 }
+
+  EcrRepoBackend:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${RepositoryPrefix}/solace-registry-v1.0.0
+      ImageTagMutability: !Ref ImageTagMutability
+      ImageScanningConfiguration: { ScanOnPush: !Ref ScanOnPush }
+      EncryptionConfiguration: { EncryptionType: AES256 }
+
+  EcrRepoUi:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${RepositoryPrefix}/solace-registry-ui-v1.0.0
+      ImageTagMutability: !Ref ImageTagMutability
+      ImageScanningConfiguration: { ScanOnPush: !Ref ScanOnPush }
+      EncryptionConfiguration: { EncryptionType: AES256 }
+
+Outputs:
+  RegistryUri:   { Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com }
+  LoginRepoUri:  { Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryPrefix}/solace-schema-registry-login-v1.0.0 }
+  BackendRepoUri:{ Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryPrefix}/solace-registry-v1.0.0 }
+  UiRepoUri:     { Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${RepositoryPrefix}/solace-registry-ui-v1.0.0 }
+
+

@@ -1,0 +1,73 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Kubernetes & Docker
+*.kubeconfig
+.kube/
+.docker/
+
+# Secrets and sensitive files
+**/values-override.yaml
+*.key
+*.crt
+*.pem
+tls.key
+tls.crt
+idp.key
+
+# AWS
+.aws/
+
+# Build artifacts
+*.tar.gz
+docker-images/*.tar
+docker-images/*.tar.gz
+
+# SERDES cache
+.serdes/
+
+# Environment
+.env
+*.env
+
+# Compiled schema files
+*.avsc
+*.avro
+
+# Blog posts (not for public repo)
+BLOG_POST.md
+BLOG_POST_PART1_DEPLOYMENT.md
+BLOG_POST_PART2_MQTT_DEVELOPMENT.md
+
