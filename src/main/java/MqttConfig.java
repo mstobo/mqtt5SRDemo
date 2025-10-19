@@ -36,7 +36,7 @@ public class MqttConfig {
     public static final String SCHEMA_REGISTRY_URL = "https://apis.18.216.87.178.nip.io/apis/registry/v3";
     public static final String SCHEMA_REGISTRY_USERNAME = "sr-developer";
     public static final String SCHEMA_REGISTRY_PASSWORD = "admin";
-    public static final String SCHEMA_ARTIFACT_ID = "solace/samples/goodschema";
+    public static final String SCHEMA_ARTIFACT_ID = "solace/samples/tempsensor";
     // Use validation for JSON Schema during serialization/deserialization
     public static final boolean JSON_VALIDATE_SCHEMA = true;
     public static final boolean JSON_SERDES_ENABLED = true;

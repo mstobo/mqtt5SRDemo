@@ -36,7 +36,7 @@ sequenceDiagram
     Note over Dev,SR: 1. Schema Registration
     Dev->>SR: POST /apis/registry/v3/groups/default/artifacts
     SR->>SR: Validate JSON Schema
-    SR-->>Dev: Schema ID: solace/samples/goodschema
+    SR-->>Dev: Schema ID: solace/samples/tempsensor
     
     Note over Pub,SR: 2. Publisher Initialization
     Pub->>SR: GET /apis/registry/v3/groups/default/artifacts/{id}
@@ -177,7 +177,7 @@ public static final String PASSWORD = "your-password";
 
 // Schema Registry settings
 public static final String SCHEMA_REGISTRY_URL = "https://your-schema-registry-url";
-public static final String SCHEMA_ARTIFACT_ID = "solace/samples/goodschema";
+public static final String SCHEMA_ARTIFACT_ID = "solace/samples/tempsensor";
 ```
 
 ### 3. Register the Schema
@@ -189,15 +189,22 @@ Use the Schema Registry Web UI or REST API to register your JSON schema:
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
-    "name": { "type": "string" },
-    "id": { "type": "string" },
-    "email": { "type": "string", "format": "email" }
+    "sensorId": { "type": "string" },
+    "temperature": { 
+      "type": "number", 
+      "minimum": -50, 
+      "maximum": 150 
+    },
+    "timestamp": { 
+      "type": "string", 
+      "format": "date-time" 
+    }
   },
-  "required": ["name", "id", "email"]
+  "required": ["sensorId", "temperature", "timestamp"]
 }
 ```
 
-Artifact ID: `solace/samples/goodschema`
+Artifact ID: `solace/samples/tempsensor`
 
 ### 4. Build the Project
 

@@ -313,17 +313,24 @@ curl -k -u developer:YOUR_PASSWORD https://apis.$LB_IP.nip.io/system/info
 curl -k -X POST \
   -u developer:YOUR_PASSWORD \
   -H "Content-Type: application/json" \
-  -H "X-Registry-ArtifactId: solace/samples/goodschema" \
+  -H "X-Registry-ArtifactId: solace/samples/tempsensor" \
   https://apis.$LB_IP.nip.io/apis/registry/v3/groups/default/artifacts \
   -d '{
     "$schema": "http://json-schema.org/draft-07/schema#",
     "type": "object",
     "properties": {
-      "name": { "type": "string" },
-      "id": { "type": "string" },
-      "email": { "type": "string", "format": "email" }
+      "sensorId": { "type": "string" },
+      "temperature": { 
+        "type": "number", 
+        "minimum": -50, 
+        "maximum": 150 
+      },
+      "timestamp": { 
+        "type": "string", 
+        "format": "date-time" 
+      }
     },
-    "required": ["name", "id", "email"]
+    "required": ["sensorId", "temperature", "timestamp"]
   }'
 ```
 
@@ -333,9 +340,9 @@ curl -k -X POST \
 2. Click **Create Artifact**
 3. Enter:
    - Group: `default`
-   - Artifact ID: `solace/samples/goodschema`
+   - Artifact ID: `solace/samples/tempsensor`
    - Type: `JSON`
-4. Paste schema JSON
+4. Paste schema JSON (temperature sensor schema above)
 5. Click **Create**
 
 ## Troubleshooting
