@@ -13,6 +13,8 @@ This project demonstrates:
 
 ## Architecture
 
+### Infrastructure
+
 ```
 Publisher (Java) → MQTT5 Broker (Solace) → Subscriber (Java)
       ↓                                            ↓
@@ -20,6 +22,92 @@ Schema Registry (AWS EKS) ←─────────────────
       ↓
 PostgreSQL (CloudNativePG)
 ```
+
+### Message Flow with Validation
+
+```mermaid
+sequenceDiagram
+    participant Dev as Developer
+    participant SR as Schema Registry
+    participant Pub as Publisher
+    participant Broker as MQTT5 Broker
+    participant Sub as Subscriber
+    
+    Note over Dev,SR: 1. Schema Registration
+    Dev->>SR: POST /apis/registry/v3/groups/default/artifacts
+    SR->>SR: Validate JSON Schema
+    SR-->>Dev: Schema ID: solace/samples/goodschema
+    
+    Note over Pub,SR: 2. Publisher Initialization
+    Pub->>SR: GET /apis/registry/v3/groups/default/artifacts/{id}
+    SR-->>Pub: Return JSON Schema
+    Pub->>Pub: Initialize SERDES serializer
+    
+    Note over Pub,Broker: 3. Message Publishing with Validation
+    Pub->>Pub: Create JSON payload
+    Pub->>Pub: SERDES serialize + validate
+    alt Valid Message
+        Pub->>Pub: Add SCHEMA_ID_STRING header
+        Pub->>Broker: PUBLISH (QoS 0) with User Properties
+        Note right of Pub: User Properties:<br/>- SCHEMA_ID_STRING<br/>- messageId<br/>- sender<br/>- clientId
+    else Invalid Message
+        Pub->>Pub: Reject (validation failed)
+        Note right of Pub: Message never sent
+    end
+    
+    Note over Sub,SR: 4. Subscriber Initialization
+    Sub->>SR: GET /apis/registry/v3/groups/default/artifacts/{id}
+    SR-->>Sub: Return JSON Schema
+    Sub->>Sub: Initialize SERDES deserializer
+    Sub->>Broker: SUBSCRIBE test/mqtt5/messages (QoS 0)
+    
+    Note over Broker,Sub: 5. Message Delivery with Validation
+    Broker->>Sub: Deliver message with User Properties
+    Sub->>Sub: Extract SERDES headers
+    Sub->>Sub: SERDES deserialize + validate
+    alt Valid Message
+        Sub->>Sub: Process validated message
+        Note left of Sub: SERDES validation: PASSED
+    else Invalid/Corrupted
+        Sub->>Sub: Log error, continue
+        Note left of Sub: SERDES validation: FAILED
+    end
+    
+    Note over Pub,Sub: End-to-End Data Integrity
+```
+
+### Development Workflow
+
+```mermaid
+flowchart TD
+    A[Start] --> B[Deploy Schema Registry<br/>DEPLOYMENT.md]
+    B --> C[Register JSON Schema<br/>via REST API or Web UI]
+    C --> D[Configure Application<br/>MqttConfig.java]
+    D --> E[Build Project<br/>mvn clean compile]
+    E --> F[Start Subscriber<br/>mvn exec:java -Dexec.mainClass=MQTT5Subscriber]
+    F --> G[Start Publisher<br/>mvn exec:java -Dexec.mainClass=MQTT5Publisher]
+    
+    G --> H{Publisher<br/>Validation}
+    H -->|Valid| I[Publish to Broker<br/>with SCHEMA_ID_STRING header]
+    H -->|Invalid| J[Reject Message<br/>Log error]
+    J --> K[Fix Schema or Data]
+    K --> G
+    
+    I --> L[Broker Routes<br/>to Subscriber]
+    L --> M{Subscriber<br/>Validation}
+    M -->|Valid| N[Process Message<br/>SERDES validation: PASSED]
+    M -->|Invalid| O[Log Error<br/>SERDES validation: FAILED]
+    
+    N --> P[End-to-End<br/>Data Integrity ✓]
+    O --> Q[Investigate:<br/>Schema mismatch?<br/>Data corruption?]
+    
+    style H fill:#ff9999
+    style M fill:#ff9999
+    style P fill:#99ff99
+    style J fill:#ffcc99
+    style O fill:#ffcc99
+```
+
 
 ## Project Structure
 
