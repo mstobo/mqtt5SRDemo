@@ -66,11 +66,11 @@ public final class SerdesSupport {
         return node;
     }
 
-    public static ObjectNode buildUserJson(String name, String id, String email) {
+    public static ObjectNode buildTempSensorJson(String sensorId, double temperature, String timestamp) {
         ObjectNode node = JSON.createObjectNode();
-        node.put("name", name);
-        node.put("id", id);
-        node.put("email", email);
+        node.put("sensorId", sensorId);
+        node.put("temperature", temperature);
+        node.put("timestamp", timestamp);
         return node;
     }
 

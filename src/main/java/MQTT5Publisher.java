@@ -122,9 +122,10 @@ public class MQTT5Publisher {
             // Every 3rd message: send invalid payload to test schema validation
             boolean sendInvalid = (i % 3 == 0);
             
-            String name = "User " + i;
-            String id = String.valueOf(i);
-            String email = "user" + i + "@example.com";
+            // Generate sensor data
+            String sensorId = "sensor-" + String.format("%03d", (i % 10) + 1);
+            double temperature = 20.0 + (i * 2.5); // Simulated temperature reading
+            String timestamp = java.time.Instant.now().toString();
             
             byte[] outBytes;
             java.util.Map<String, Object> serdesHeaders = new java.util.HashMap<>();
@@ -132,13 +133,14 @@ public class MQTT5Publisher {
                 try {
                     JsonNode jsonNode;
                     if (sendInvalid) {
-                        // Create invalid payload (missing required fields or wrong types)
-                        System.out.println("Attempting to send INVALID message " + i + " (missing required fields)");
+                        // Create invalid payload (temperature out of range or missing fields)
+                        System.out.println("Attempting to send INVALID message " + i + " (temperature out of range or missing fields)");
                         jsonNode = JSON.createObjectNode();
-                        ((ObjectNode) jsonNode).put("invalid_field", "This message doesn't match the schema");
-                        ((ObjectNode) jsonNode).put("another_bad_field", i);
+                        ((ObjectNode) jsonNode).put("sensorId", sensorId);
+                        ((ObjectNode) jsonNode).put("temperature", 200.0); // Invalid: exceeds max of 150
+                        // Missing required "timestamp" field
                     } else {
-                        jsonNode = SerdesSupport.buildUserJson(name, id, email);
+                        jsonNode = SerdesSupport.buildTempSensorJson(sensorId, temperature, timestamp);
                     }
                     
                     // Pre-populate SCHEMA_ID_STRING with the artifact ID for deserializer
@@ -162,7 +164,7 @@ public class MQTT5Publisher {
                 }
             } else {
                 // Plain JSON publish path (no serializer)
-                String json = SerdesSupport.jsonToString(SerdesSupport.buildUserJson(name, id, email));
+                String json = SerdesSupport.jsonToString(SerdesSupport.buildTempSensorJson(sensorId, temperature, timestamp));
                 outBytes = json.getBytes(java.nio.charset.StandardCharsets.UTF_8);
                 serdesHeaders.put("SCHEMA_ID_STRING", MqttConfig.SCHEMA_ARTIFACT_ID);
             }
@@ -196,12 +198,12 @@ public class MQTT5Publisher {
             
             try {
                 client.publish(MqttConfig.TOPIC_BASE, message);
-                System.out.println("Published user record: {name=" + name + ", id=" + id + ", email=" + email + "}");
+                System.out.println("Published temperature reading: {sensorId=" + sensorId + ", temperature=" + temperature + "°C, timestamp=" + timestamp + "}");
             } catch (MqttException e) {
                 System.err.println("Failed to publish message: " + e.getMessage());
             }
             
-            Thread.sleep(1000);
+            Thread.sleep(5000); // 5 second delay between messages
         }
         
         System.out.println("Finished publishing all messages");
