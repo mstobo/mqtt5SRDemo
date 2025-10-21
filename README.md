@@ -286,12 +286,14 @@ Major dependencies (see `pom.xml` for complete list):
 ## Testing
 
 The publisher includes built-in validation tests:
-- Messages 1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20: Valid
-- Messages 3, 6, 9, 12, 15, 18: Invalid (missing/malformed email)
+- Messages 1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20: Valid temperature readings
+- Messages 3, 6, 9, 12, 15, 18: Invalid (missing required fields, extra fields like "humidity", or wrong data types)
 
 Expected behavior:
 - Valid messages published and validated on both ends
-- Invalid messages rejected at publisher with clear error messages
+- Invalid messages rejected at publisher with clear schema validation errors
+
+Note: Temperature out of range (-50 to 150°C) would pass schema validation but trigger business logic alerts for equipment malfunction
 
 ## Configuration Options
 
