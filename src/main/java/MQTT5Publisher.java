@@ -58,9 +58,11 @@ public class MQTT5Publisher {
         options.setAutomaticReconnect(true);
         options.setConnectionTimeout(MqttConfig.CONNECTION_TIMEOUT);
         
-        // Set authentication credentials from config
-        options.setUserName(MqttConfig.USERNAME);
-        options.setPassword(MqttConfig.PASSWORD.getBytes());
+        // Set authentication credentials from config (if provided)
+        if (MqttConfig.USERNAME != null && !MqttConfig.USERNAME.isEmpty()) {
+            options.setUserName(MqttConfig.USERNAME);
+            options.setPassword(MqttConfig.PASSWORD.getBytes());
+        }
         
         // Set callback for connection events
         client.setCallback(new MqttCallback() {
