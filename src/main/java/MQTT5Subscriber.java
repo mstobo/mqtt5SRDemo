@@ -64,9 +64,11 @@ public class MQTT5Subscriber {
         options.setReceiveMaximum(MqttConfig.RECEIVE_MAXIMUM);
         options.setMaximumPacketSize(MqttConfig.MAX_PACKET_SIZE);
         
-        // Set authentication credentials
-        options.setUserName(MqttConfig.USERNAME);
-        options.setPassword(MqttConfig.PASSWORD.getBytes());
+        // Set authentication credentials (if provided)
+        if (MqttConfig.USERNAME != null && !MqttConfig.USERNAME.isEmpty()) {
+            options.setUserName(MqttConfig.USERNAME);
+            options.setPassword(MqttConfig.PASSWORD.getBytes());
+        }
         
         // Set callback for handling messages and connection events
         client.setCallback(new MqttCallback() {
@@ -253,40 +255,6 @@ public class MQTT5Subscriber {
         }
         
         System.out.println("========================\n");
-        
-        // Optional: Send a response if response topic is specified
-        if (properties != null && properties.getResponseTopic() != null) {
-            sendResponse(properties.getResponseTopic(), properties.getCorrelationData());
-        }
-    }
-    
-    private void sendResponse(String responseTopic, byte[] correlationData) {
-        try {
-            if (!client.isConnected() || !fullyConnected) {
-                System.err.println("Cannot send response - client not fully connected");
-                return;
-            }
-            
-            String responsePayload = "ACK: Message received at " + System.currentTimeMillis() + " by " + CLIENT_ID;
-            MqttMessage responseMessage = new MqttMessage(responsePayload.getBytes());
-            responseMessage.setQos(0);
-            
-            // Set response properties
-            MqttProperties responseProperties = new MqttProperties();
-            if (correlationData != null) {
-                responseProperties.setCorrelationData(correlationData);
-            }
-            responseProperties.getUserProperties().add(new UserProperty("responseFrom", "MQTT5Subscriber"));
-            responseProperties.getUserProperties().add(new UserProperty("authenticatedAs", MqttConfig.USERNAME));
-            responseProperties.getUserProperties().add(new UserProperty("clientId", CLIENT_ID));
-            responseMessage.setProperties(responseProperties);
-            
-            IMqttToken token = client.publish(responseTopic, responseMessage);
-            token.waitForCompletion(5000);
-            System.out.println("Response sent to: " + responseTopic);
-        } catch (MqttException e) {
-            System.err.println("Failed to send response: " + e.getMessage());
-        }
     }
     
     public void waitForMessages() throws InterruptedException {
