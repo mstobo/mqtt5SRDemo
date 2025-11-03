@@ -73,10 +73,12 @@ aws cloudformation wait stack-create-complete \
 
 ### 2.1 Download Schema Registry Images
 
-Download the Solace Schema Registry images from Solace (requires account):
-- `solace-registry-v1.0.0.tar.gz`
-- `solace-registry-ui-v1.0.0.tar.gz`
+Download the Solace Schema Registry image from Solace (requires account):
 - `solace-schema-registry-login-v1.0.0.tar.gz`
+- It contains 3 tar files.
+- solace-schema-registry-login-v1.0.0.tar
+- solace-registry-v1.0.0.tar
+- solace-registry-ui-v1.0.0.tar
 
 Place them in the `docker-images/` directory.
 
