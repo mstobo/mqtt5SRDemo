@@ -1,0 +1,72 @@
+# Filebeat configuration for collecting MQTT5 application logs
+# and forwarding them to Logstash/Elasticsearch
+
+filebeat.inputs:
+  # Collect logs from MQTT5 Publisher
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/mqtt5/publisher*.log
+    fields:
+      app: mqtt5-publisher
+      log_type: application
+    fields_under_root: true
+    
+    # Only include lines with [VALIDATION_EVENT]
+    include_lines: ['\[VALIDATION_EVENT\]']
+
+  # Collect logs from MQTT5 Subscriber
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/mqtt5/subscriber*.log
+    fields:
+      app: mqtt5-subscriber
+      log_type: application
+    fields_under_root: true
+    
+    # Only include lines with [VALIDATION_EVENT]
+    include_lines: ['\[VALIDATION_EVENT\]']
+
+# Process validation events
+processors:
+  # Extract the JSON from the log line
+  - dissect:
+      tokenizer: "[VALIDATION_EVENT] %{validation_json}"
+      field: "message"
+      target_prefix: ""
+  
+  # Parse the extracted JSON
+  - decode_json_fields:
+      fields: ["validation_json"]
+      target: ""
+      overwrite_keys: true
+  
+  # Clean up temporary fields
+  - drop_fields:
+      fields: ["validation_json", "log", "input", "agent", "ecs"]
+  
+  # Add geographic location (if running in cloud)
+  - add_cloud_metadata: ~
+  - add_host_metadata: ~
+
+# Output to Logstash for further processing
+output.logstash:
+  hosts: ["logstash:5044"]
+  
+# Alternative: Direct to Elasticsearch (skip Logstash)
+# output.elasticsearch:
+#   hosts: ["localhost:9200"]
+#   index: "mqtt5-validation-%{+yyyy.MM.dd}"
+#   username: "elastic"
+#   password: "changeme"
+
+# Logging configuration
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
+

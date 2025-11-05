@@ -1,0 +1,222 @@
+{
+  "dashboard_config": {
+    "title": "MQTT5 Schema Validation Operations Dashboard",
+    "description": "Real-time monitoring of message quality and validation failures across distributed MQTT5 clients",
+    "version": "8.0",
+    "visualizations": [
+      {
+        "title": "Validation Failure Rate (Last 24h)",
+        "type": "line_chart",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "filter": {
+            "time_range": "last_24h",
+            "field": "success",
+            "value": false
+          },
+          "aggregation": {
+            "type": "date_histogram",
+            "field": "@timestamp",
+            "interval": "5m"
+          }
+        },
+        "metrics": [
+          {
+            "field": "message_id",
+            "aggregation": "count",
+            "label": "Failed Messages"
+          }
+        ]
+      },
+      {
+        "title": "Failure Rate by Error Category",
+        "type": "pie_chart",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "filter": {
+            "field": "success",
+            "value": false
+          },
+          "aggregation": {
+            "field": "error_category",
+            "size": 10
+          }
+        }
+      },
+      {
+        "title": "Top 10 Failing Clients",
+        "type": "data_table",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "filter": {
+            "field": "success",
+            "value": false
+          },
+          "aggregation": {
+            "field": "client_id",
+            "size": 10,
+            "order": "desc"
+          }
+        },
+        "columns": [
+          "client_id",
+          "hostname",
+          "failure_count",
+          "last_failure_time"
+        ]
+      },
+      {
+        "title": "Publisher vs Subscriber Failures",
+        "type": "bar_chart",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "filter": {
+            "field": "success",
+            "value": false
+          },
+          "aggregation": {
+            "field": "client_type"
+          }
+        }
+      },
+      {
+        "title": "Validation Failures by Sensor ID",
+        "type": "heat_map",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "filter": {
+            "field": "success",
+            "value": false,
+            "exists": "sensor_id"
+          },
+          "aggregation": {
+            "x_axis": "@timestamp",
+            "y_axis": "sensor_id"
+          }
+        }
+      },
+      {
+        "title": "Mean Time Between Failures (MTBF)",
+        "type": "metric",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "calculation": "time_series_analysis",
+          "metric": "avg_time_between_events"
+        }
+      },
+      {
+        "title": "Recent Validation Errors (Live)",
+        "type": "data_table",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "filter": {
+            "time_range": "last_15m",
+            "field": "success",
+            "value": false
+          },
+          "sort": {
+            "field": "@timestamp",
+            "order": "desc"
+          },
+          "size": 50
+        },
+        "columns": [
+          "@timestamp",
+          "client_type",
+          "client_id",
+          "sensor_id",
+          "error_category",
+          "error_message"
+        ]
+      },
+      {
+        "title": "Schema Validation Success Rate (%)",
+        "type": "gauge",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "time_range": "last_1h",
+          "calculation": {
+            "numerator": {
+              "filter": {"field": "success", "value": true},
+              "aggregation": "count"
+            },
+            "denominator": {
+              "aggregation": "count"
+            }
+          }
+        },
+        "thresholds": {
+          "green": 99.5,
+          "yellow": 95,
+          "red": 90
+        }
+      }
+    ],
+    "alerts": [
+      {
+        "name": "High Validation Failure Rate",
+        "condition": "Failure rate > 5% over last 10 minutes",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "time_range": "last_10m",
+          "threshold": {
+            "type": "percentage",
+            "field": "success",
+            "value": false,
+            "above": 5
+          }
+        },
+        "actions": [
+          {
+            "type": "slack",
+            "channel": "#ops-alerts"
+          },
+          {
+            "type": "email",
+            "recipients": ["ops-team@company.com"]
+          }
+        ]
+      },
+      {
+        "name": "Critical Sensor Offline",
+        "condition": "No messages from sensor-001 for 5 minutes",
+        "query": {
+          "index": "mqtt5-validation-*",
+          "time_range": "last_5m",
+          "filter": {
+            "field": "sensor_id",
+            "value": "sensor-001",
+            "missing": true
+          }
+        },
+        "actions": [
+          {
+            "type": "pagerduty",
+            "severity": "critical"
+          }
+        ]
+      }
+    ]
+  },
+  "index_pattern": {
+    "name": "mqtt5-validation-*",
+    "time_field": "@timestamp",
+    "fields": [
+      {"name": "event_type", "type": "keyword"},
+      {"name": "client_type", "type": "keyword"},
+      {"name": "success", "type": "boolean"},
+      {"name": "message_id", "type": "keyword"},
+      {"name": "schema_id", "type": "keyword"},
+      {"name": "topic", "type": "keyword"},
+      {"name": "client_id", "type": "keyword"},
+      {"name": "broker_url", "type": "keyword"},
+      {"name": "sensor_id", "type": "keyword"},
+      {"name": "temperature", "type": "float"},
+      {"name": "error_message", "type": "text"},
+      {"name": "error_category", "type": "keyword"},
+      {"name": "hostname", "type": "keyword"},
+      {"name": "environment", "type": "keyword"}
+    ]
+  }
+}
+

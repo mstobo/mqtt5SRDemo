@@ -33,12 +33,12 @@ public class MqttConfig {
     public static final long MESSAGE_EXPIRY_INTERVAL = 300L;  // 5 minutes in seconds
     
     // Schema Registry Configuration (fill in credentials)
-    public static final String SCHEMA_REGISTRY_URL = "https://apis.3.12.75.11.nip.io/apis/registry/v3";
+    public static final String SCHEMA_REGISTRY_URL = "https://apis.3.132.149.135.nip.io/apis/registry/v3";
     public static final String SCHEMA_REGISTRY_USERNAME = "sr-developer";
     public static final String SCHEMA_REGISTRY_PASSWORD = "admin";
     public static final String SCHEMA_ARTIFACT_ID = "solace/samples/tempsensor";
     // Use validation for JSON Schema during serialization/deserialization
-    // ENABLED WITH MOSQUITTO - proving Schema Registry works with ANY MQTT5 broker!
+    // ENABLED - Schema Registry validation active
     public static final boolean JSON_VALIDATE_SCHEMA = true;
     public static final boolean JSON_SERDES_ENABLED = true;
     public static final boolean JSON_PUBLISH_WITH_SERDES = true;

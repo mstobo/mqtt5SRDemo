@@ -180,11 +180,14 @@ public class MQTT5Subscriber {
             System.out.println("Payload (raw bytes): " + new String(message.getPayload()));
         }
         
+        // Extract metadata for logging
+        MqttProperties properties = message.getProperties();
+        java.util.List<UserProperty> userProps = (properties != null) ? properties.getUserProperties() : java.util.Collections.emptyList();
+        String messageId = extractUserProperty(userProps, "messageId");
+        String sensorId = extractSensorIdFromPayload(new String(message.getPayload(), java.nio.charset.StandardCharsets.UTF_8));
+        
         // SERDES deserialization with validation
         try {
-            MqttProperties properties = message.getProperties();
-            java.util.List<UserProperty> userProps = (properties != null) ? properties.getUserProperties() : java.util.Collections.emptyList();
-            
             // Extract only SERDES-specific headers, not all user properties
             java.util.Map<String, Object> serdesHeaders = new java.util.HashMap<>();
             for (UserProperty prop : userProps) {
@@ -204,13 +207,34 @@ public class MQTT5Subscriber {
             JsonNode deserialized = deserializer.deserialize(topic, message.getPayload(), serdesHeaders);
             System.out.println("SERDES validation: PASSED");
             System.out.println("Deserialized JSON: " + SerdesSupport.jsonToString(deserialized));
+            
+            // ELK: Log successful validation (sampled at 5%)
+            ValidationLogger.logSuccessfulValidation(
+                ValidationLogger.ClientType.SUBSCRIBER,
+                messageId != null ? messageId : "unknown",
+                MqttConfig.SCHEMA_ARTIFACT_ID,
+                topic,
+                CLIENT_ID,
+                sensorId
+            );
+            
         } catch (Exception e) {
             System.err.println("SERDES validation: FAILED");
             System.err.println("  Reason: " + e.getMessage());
+            
+            // ELK: Log validation/deserialization failure
+            // CRITICAL - message passed publisher validation but failed subscriber validation
+            ValidationLogger.logSubscriberValidationFailure(
+                messageId != null ? messageId : "unknown",
+                MqttConfig.SCHEMA_ARTIFACT_ID,
+                topic,
+                e.getMessage(),
+                CLIENT_ID,
+                sensorId
+            );
         }
         
-        // Handle MQTT5 message properties
-        MqttProperties properties = message.getProperties();
+        // Handle MQTT5 message properties (reuse properties variable from above)
         if (properties != null) {
             System.out.println("\n--- MQTT5 Properties ---");
             
@@ -302,5 +326,32 @@ public class MQTT5Subscriber {
                 }
             }
         }
+    }
+    
+    /**
+     * Extract a user property value by key
+     */
+    private String extractUserProperty(java.util.List<UserProperty> userProps, String key) {
+        return userProps.stream()
+            .filter(up -> key.equals(up.getKey()))
+            .map(UserProperty::getValue)
+            .findFirst()
+            .orElse(null);
+    }
+    
+    /**
+     * Extract sensor ID from JSON payload for correlation
+     */
+    private String extractSensorIdFromPayload(String payloadJson) {
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode node = mapper.readTree(payloadJson);
+            if (node.has("sensorId")) {
+                return node.get("sensorId").asText();
+            }
+        } catch (Exception e) {
+            // Ignore parsing errors
+        }
+        return null;
     }
 }

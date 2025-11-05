@@ -153,14 +153,65 @@ public class MQTT5Publisher {
                     
                     if (sendInvalid) {
                         System.err.println("WARNING: Invalid message " + i + " was NOT rejected by schema validation!");
+                        
+                        // ELK: Log unexpected success (should have failed)
+                        ValidationLogger.logValidationEvent(
+                            ValidationLogger.EventType.VALIDATION_FAILURE,
+                            ValidationLogger.ClientType.PUBLISHER,
+                            String.valueOf(i),
+                            MqttConfig.SCHEMA_ARTIFACT_ID,
+                            MqttConfig.TOPIC_BASE,
+                            false,
+                            "Invalid message was not rejected by schema validation",
+                            clientId,
+                            MqttConfig.BROKER_URL,
+                            sensorId,
+                            200.0
+                        );
+                    } else {
+                        // ELK: Log successful validation (sampled at 5%)
+                        ValidationLogger.logSuccessfulValidation(
+                            ValidationLogger.ClientType.PUBLISHER,
+                            String.valueOf(i),
+                            MqttConfig.SCHEMA_ARTIFACT_ID,
+                            MqttConfig.TOPIC_BASE,
+                            clientId,
+                            sensorId
+                        );
                     }
                 } catch (Exception e) {
                     if (sendInvalid) {
                         System.out.println("SUCCESS: Invalid message " + i + " was rejected by schema validation");
                         System.out.println("  Reason: " + e.getMessage());
+                        
+                        // ELK: Log validation failure (expected for invalid messages)
+                        ValidationLogger.logPublisherValidationFailure(
+                            String.valueOf(i),
+                            MqttConfig.SCHEMA_ARTIFACT_ID,
+                            MqttConfig.TOPIC_BASE,
+                            e.getMessage(),
+                            clientId,
+                            sensorId,
+                            200.0
+                        );
                     } else {
                         System.err.println("ERROR: Valid message " + i + " failed serialization: " + e.getMessage());
                         e.printStackTrace();
+                        
+                        // ELK: Log unexpected serialization failure
+                        ValidationLogger.logValidationEvent(
+                            ValidationLogger.EventType.SERIALIZATION_ERROR,
+                            ValidationLogger.ClientType.PUBLISHER,
+                            String.valueOf(i),
+                            MqttConfig.SCHEMA_ARTIFACT_ID,
+                            MqttConfig.TOPIC_BASE,
+                            false,
+                            "Valid message failed serialization: " + e.getMessage(),
+                            clientId,
+                            MqttConfig.BROKER_URL,
+                            sensorId,
+                            temperature
+                        );
                     }
                     continue;
                 }
@@ -203,6 +254,21 @@ public class MQTT5Publisher {
                 System.out.println("Published temperature reading: {sensorId=" + sensorId + ", temperature=" + temperature + "°C, timestamp=" + timestamp + "}");
             } catch (MqttException e) {
                 System.err.println("Failed to publish message: " + e.getMessage());
+                
+                // ELK: Log publish failure (network/broker issue)
+                ValidationLogger.logValidationEvent(
+                    ValidationLogger.EventType.PUBLISH_ERROR,
+                    ValidationLogger.ClientType.PUBLISHER,
+                    String.valueOf(i),
+                    MqttConfig.SCHEMA_ARTIFACT_ID,
+                    MqttConfig.TOPIC_BASE,
+                    false,
+                    "MQTT publish failed: " + e.getMessage(),
+                    clientId,
+                    MqttConfig.BROKER_URL,
+                    sensorId,
+                    temperature
+                );
             }
             
             Thread.sleep(5000); // 5 second delay between messages
