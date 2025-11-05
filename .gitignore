@@ -1,75 +1,66 @@
-# Maven
-target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-pom.xml.next
-release.properties
-dependency-reduced-pom.xml
-buildNumber.properties
-.mvn/timing.properties
-.mvn/wrapper/maven-wrapper.jar
-
-# Java
+# Compiled class files
 *.class
-*.jar
-*.war
-*.ear
-*.log
-hs_err_pid*
+target/
 
-# IDE
+# Log files
+*.log
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE files
 .idea/
 *.iml
 .vscode/
-.classpath
-.project
-.settings/
-*.swp
-*.swo
-*~
-
-# OS
 .DS_Store
-Thumbs.db
 
-# Kubernetes & Docker
-*.kubeconfig
-.kube/
-.docker/
-
-# Secrets and sensitive files
-**/values-override.yaml
-*.key
-*.crt
-*.pem
-tls.key
-tls.crt
-idp.key
-
-# AWS
-.aws/
-
-# Build artifacts
-*.tar.gz
-docker-images/*.tar
-docker-images/*.tar.gz
-
-# SERDES cache
-.serdes/
-
-# Environment
-.env
-*.env
-
-# Compiled schema files
-*.avsc
-*.avro
-
-# Blog posts and social media content (not for public repo)
+# Blog posts and social media content
 BLOG_POST.md
 BLOG_POST_PART1_DEPLOYMENT.md
 BLOG_POST_PART2_MQTT_DEVELOPMENT.md
 LINKEDIN_POST.md
 LINKEDIN_POST_READY.md
 
+# Example integration files (reference only)
+*-Example.java
+
+# Temporary Kubernetes files
+update-ingress.yaml
+
+# ELK Stack data volumes (if running locally)
+elk/elasticsearch-data/
+elk/filebeat-data/
+
+# Sensitive files - TLS certificates and keys
+*.crt
+*.key
+*.pem
+tls.*
+idp.key
+schema-registry.crt
+
+# SERDES cache
+.serdes/
+
+# Docker images (too large for git)
+docker-images/
+
+# Infrastructure override files (may contain sensitive info)
+infra/values-override.yaml
+
+# Temporary files
+export_schema.py
+
+# ELK temporary/troubleshooting files
+elk/FIX_DASHBOARD_PANELS.md
+elk/kibana-dashboard-simple.ndjson
+elk/kibana-dashboard-fixed.ndjson
+
+# Example/reference files
+MQTT5PublisherWithELK.java
+MQTT5SubscriberWithELK.java
+
+# Log directories
+logs/
