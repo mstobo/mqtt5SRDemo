@@ -120,9 +120,9 @@ public class MQTT5Publisher {
             serializer = SerdesSupport.getJsonSerializer();
         }
         
-        for (int i = 1; i <= 20; i++) {
-            // Every 3rd message: send invalid payload to test schema validation
-            boolean sendInvalid = (i % 3 == 0);
+        for (int i = 1; i <= 100; i++) {
+            // Every 5th message: send invalid payload to test schema validation
+            boolean sendInvalid = (i % 5 == 0);
             
             // Generate sensor data
             String sensorId = "sensor-" + String.format("%03d", (i % 10) + 1);
@@ -271,7 +271,7 @@ public class MQTT5Publisher {
                 );
             }
             
-            Thread.sleep(5000); // 5 second delay between messages
+            Thread.sleep(2000); // 2 second delay between messages
         }
         
         System.out.println("Finished publishing all messages");
