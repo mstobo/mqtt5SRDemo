@@ -76,13 +76,15 @@ aws cloudformation wait stack-create-complete \
 Download the Solace Schema Registry image from Solace (requires account):
 - `solace-schema-registry-login-v1.0.0.tar.gz`
 - It contains 3 tar files.
-- solace-schema-registry-login-v1.0.0.tar
-- solace-registry-v1.0.0.tar
-- solace-registry-ui-v1.0.0.tar
+- solace-schema-registry-login-v1.0.0.tar.gz
+- solace-registry-v1.0.0.tar.gz
+- solace-registry-ui-v1.0.0.tar.gz
 
 Place them in the `docker-images/` directory.
 
 ### 2.2 Upload to ECR
+
+First, authenticate to ECR:
 
 ```bash
 # Set your AWS account ID and region
@@ -93,14 +95,26 @@ export AWS_REGION=us-east-2
 aws ecr get-login-password --region $AWS_REGION | \
   docker login --username AWS --password-stdin \
   $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+```
 
-# Use the upload script
+Choose **ONE** of the following methods to upload images:
+
+#### Option A: Automated Upload (Recommended)
+
+```bash
 cd infra/scripts/
 chmod +x upload_image.sh
 ./upload_image.sh
+```
 
-# Or manually for each image:
-cd ../../docker-images/
+The script will automatically extract, tag, and push all three images (Backend, UI, Login/IDP) to ECR.
+
+#### Option B: Manual Upload
+
+If you prefer more control or the script doesn't work in your environment:
+
+```bash
+cd docker-images/
 
 # Backend
 gunzip -c solace-registry-v1.0.0.tar.gz > backend.tar
@@ -120,6 +134,8 @@ docker load -i login.tar
 docker tag <IMAGE_ID> $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/your-org/schemaregistry/solace-schema-registry-login-v1.0.0:v1.0.0
 docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/your-org/schemaregistry/solace-schema-registry-login-v1.0.0:v1.0.0
 ```
+
+**Note**: Replace `<IMAGE_ID>` with the actual image ID from `docker images` output after loading.
 
 ## Step 3: Install Kubernetes Components
 
