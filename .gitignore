@@ -65,5 +65,9 @@ elk/kibana-dashboard-fixed.ndjson
 MQTT5PublisherWithELK.java
 MQTT5SubscriberWithELK.java
 
+# Run scripts (local convenience, not needed in repo)
+run-publisher.sh
+run-subscriber.sh
+
 # Log directories
 logs/
