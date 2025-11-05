@@ -165,23 +165,19 @@ This means:
 cd elk/
 ./quick-start.sh
 ```
-Cost: Free
 Time: 5 minutes
 
 ### Option 2: Elastic Cloud (Recommended for Production)
 - Sign up at https://cloud.elastic.co
 - Managed service, no ops overhead
-- Cost: ~$95/month (Standard tier)
 
 ### Option 3: AWS OpenSearch
 - Integrated with AWS ecosystem
 - Good if already using AWS for Schema Registry
-- Cost: ~$200/month (3 nodes)
 
 ### Option 4: Self-Hosted on Kubernetes
 - Deploy on same EKS cluster as Schema Registry
-- Full control, cost-effective at scale
-- Cost: ~$150/month (EKS costs only)
+- Full control, scalable
 
 ## Integration Steps
 
@@ -310,7 +306,7 @@ client_id:"mqtt5-publisher-12345" AND success:false
 
 ### For Business Stakeholders
 - **Data Quality**: Quantify reliability of IoT data streams
-- **Cost Optimization**: Reduce waste from invalid messages
+- **Operational Efficiency**: Reduce waste from invalid messages
 - **Compliance**: Audit trail of data validation
 - **Customer Experience**: Ensure high-quality sensor data
 
@@ -346,22 +342,6 @@ client_id:"mqtt5-publisher-12345" AND success:false
 1. Check index health: `curl http://localhost:9200/_cluster/health`
 2. Increase Elasticsearch memory
 3. Reduce query time range
-
-## Cost Analysis
-
-### Development
-- ELK in Docker: **Free**
-- Operational effort: **Minimal** (5 min setup)
-
-### Production (100 clients, 1M messages/day, 5% failure rate)
-- **Elastic Cloud**: $95/month (Standard tier)
-- **AWS OpenSearch**: $200/month (3 nodes)
-- **Self-hosted on EKS**: $150/month (infrastructure only)
-
-### Log Volume Estimate
-- With sampling: ~50K log entries/day = ~1.5M/month
-- Storage: ~5 GB/month (with 30-day retention)
-- Elasticsearch sizing: 3 nodes, 8 GB RAM each
 
 ## Next Steps
 
