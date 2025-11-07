@@ -17,13 +17,37 @@ ingress:
   tls:
     enabled: true
     secretName: schema-registry-tls-secret
-    # Note: Create the TLS secret separately using kubectl:
+    # Option 1: Create the TLS secret separately using kubectl (recommended):
     # kubectl -n solace create secret tls schema-registry-tls-secret --cert=tls.crt --key=tls.key
+    #
+    # Option 2: Embed certificates directly in this file (less secure, for testing only):
+    # Uncomment and replace the sections below with your certificate and key
+    # Generate using: openssl req -x509 -newkey rsa:2048 -keyout tls.key -out tls.crt -days 365 -nodes -subj "/CN=*.YOUR-DOMAIN"
+    #crt:  |
+    #      -----BEGIN CERTIFICATE-----
+    #      [YOUR TLS CERTIFICATE GOES HERE]
+    #      Replace this entire section with your certificate content
+    #      Keep the same indentation (6 spaces before each line)
+    #      -----END CERTIFICATE-----
+    #key:  |
+    #      -----BEGIN PRIVATE KEY-----
+    #      [YOUR TLS PRIVATE KEY GOES HERE]
+    #      Replace this entire section with your private key content
+    #      Keep the same indentation (6 spaces before each line)
+    #      -----END PRIVATE KEY-----
    
 idp:
   replicas: 1
   registryOidcClientSecret: admin  # Change in production
-  # registryIdpKey: Create secret from TLS key
+  # Replace the IDP key below with your own private key (should match the TLS key above)
+  # If using Option 1 (kubectl secret), comment out the registryIdpKey section
+  # If using Option 2 (embedded), uncomment and replace with your key:
+  #registryIdpKey: |
+  #                -----BEGIN PRIVATE KEY-----
+  #                [YOUR IDP PRIVATE KEY GOES HERE]
+  #                Replace this entire section with your IDP private key content
+  #                Keep the same indentation (16 spaces before each line)
+  #                -----END PRIVATE KEY-----
   nodeEnv: prod
   developerPassword: admin  # Change in production
   readonlyPassword: admin   # Change in production
@@ -111,11 +135,18 @@ backup:
 imagePullPolicy: IfNotPresent
 
 # Image pull secrets for private registries
-# Note: Create the Docker config secret separately:
+# Option 1: Create the Docker config secret separately using kubectl (recommended):
 # kubectl -n solace create secret docker-registry docker-registry-config \
 #   --docker-server=YOUR_AWS_ACCOUNT_ID.dkr.ecr.YOUR_REGION.amazonaws.com \
 #   --docker-username=AWS \
 #   --docker-password=$(aws ecr get-login-password --region YOUR_REGION)
 imagePullSecrets:
   - name: docker-registry-config
+
+# Option 2: Embed Docker config directly in this file (less secure, for testing only):
+# Uncomment the line below and replace with your base64-encoded Docker config JSON
+# Generate using: kubectl create secret docker-registry temp-secret \
+#   --docker-server=YOUR_ECR_URL --docker-username=AWS \
+#   --docker-password=$(aws ecr get-login-password) --dry-run=client -o jsonpath='{.data.\.dockerconfigjson}'
+#dockerconfigjson: [YOUR BASE64-ENCODED DOCKER CONFIG JSON GOES HERE]
 
