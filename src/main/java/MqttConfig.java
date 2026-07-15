@@ -12,7 +12,7 @@ public class MqttConfig {
     
     // Authentication Configuration
     public static final String USERNAME = "solace-cloud-client";     // Change this to your username
-    public static final String PASSWORD = "REDACTED";     // Change this to your password
+    public static final String PASSWORD = System.getenv().getOrDefault("MQTT_PASSWORD", "");     // Set via MQTT_PASSWORD env var
     
     // Topic Configuration
     public static final String TOPIC_BASE = "test/mqtt5/messages";
@@ -34,8 +34,8 @@ public class MqttConfig {
     
     // Schema Registry Configuration (fill in credentials)
     public static final String SCHEMA_REGISTRY_URL = "https://apis.3.132.149.135.nip.io/apis/registry/v3";
-    public static final String SCHEMA_REGISTRY_USERNAME = "sr-developer";
-    public static final String SCHEMA_REGISTRY_PASSWORD = "admin";
+    public static final String SCHEMA_REGISTRY_USERNAME = System.getenv().getOrDefault("SCHEMA_REGISTRY_USERNAME", "sr-developer");
+    public static final String SCHEMA_REGISTRY_PASSWORD = System.getenv().getOrDefault("SCHEMA_REGISTRY_PASSWORD", "");
     public static final String SCHEMA_ARTIFACT_ID = "solace/samples/tempsensor";
     // Use validation for JSON Schema during serialization/deserialization
     // ENABLED - Schema Registry validation active
